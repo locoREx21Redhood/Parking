@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODOS LOS VEHICULOS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="Css/stylesheet2.css">
+</head>
+<body>
+	<header>
+    	<!-- Aquí tendremos el menú de nuestra pagina web-->
+    	<nav>
+        	<ul>
+                <li><a href="#">VEHICULOS</a></li>
+                <li><a href="index.html">INICIO</a></li>
+                <li><a href="StudentRegist.html">REGISTRO</a></li>
+        	</ul>
+    	</nav>
+	</header>
+<h1>VEHICULOS CUCEI</h1>
+<form>
+    <div class="mb-3 mt-3">
+        <label for="Parkingmodelo" class="form-label">Modelo:</label>
+        <input type="text" class="form-control" id="Parkingmodelo" placeholder="Buscar por el modelo del vehiculo" name="Parkingmodelo">
+    </div>
+    <div class="mb-3 mt-3">
+        <label for="Parkingccolor" class="form-label">Color:</label>
+        <input type="text" class="form-control" id="Parkingccolor" placeholder="Buscar por el color del vehiculo" name="Parkingccolor">
+    </div>
+    <button type="button" class="btn btn-primary" onclick="findParking('Parkingmodelo','/findParkingBymodelo/')">Buscar por Modelo</button>
+    <button type="button" class="btn btn-primary" onclick="findParking('Parkingccolor','/findParkingByccolor/')">Buscar por Color</button>
+    <button type="button" class="btn btn-primary" onclick="populateTableFromJSON(url)">limpiar filtros</button>
+</form>
+
+    <table id="parking" class="table table-dark table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>NOMBRE(S)</th>
+            <th>APELLIDOS</th>
+            <th>CARRERA</th>
+            <th>MARCA</th>
+            <th>MODELO</th>
+            <th>COLOR</th>
+            <th>PLACA</th>
+            <th>EMAIL</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Table body will be populated dynamically -->
+        </tbody>
+    </table>
+
+    <script>
+        // URL from which JSON data will be fetched
+        const url = "http://localhost:8080/parking";
+
+        // Function to populate table from JSON data
+        async function populateTableFromJSON(url) {
+            cleanTableRows();
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const VehiclesFromDB = await response.json();
+                const tableBody = document.querySelector("#parking tbody"); // Aquí se cambió "#parkingTable" por "#ParkingTable"
+                VehiclesFromDB.forEach(parking => {
+
+                    const row = document.createElement("tr");
+                    let idNumber = parking.id;
+                    row.innerHTML = `
+                    <td class="id">${idNumber}</td>
+                    <td contenteditable="false">${parking.nombres}</td>
+                    <td contenteditable="false">${parking.apellidos}</td>
+                    <td contenteditable="false">${parking.carrera}</td>
+                    <td contenteditable="false">${parking.marca}</td>
+                    <td contenteditable="false">${parking.modelo}</td>
+                    <td contenteditable="false">${parking.ccolor}</td>
+                    <td contenteditable="false">${parking.placa}</td>
+                    <td contenteditable="false">${parking.email}</td>
+                    <td><button type="button" class="btn btn-danger" id="${idNumber}" onclick="deleteParkingButton(${idNumber})">Eliminar</button>
+                    <button type="button" class="btn btn-warning" id="${idNumber}" onclick="editParking(${idNumber})">Editar</button></td>
+                `;
+                    row.setAttribute("id", idNumber);
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Hubo un problema con la operación de recuperación:', error);
+            }
+        }
+
+        // Call the function to populate table
+        populateTableFromJSON(url);
+
+    function editParking(buttonPressId) {
+        let row = document.getElementById(buttonPressId);
+
+        let nombresCell = row.children[1];
+        let apellidosCell = row.children[2];
+        let carreraCell = row.children[3];
+        let marcaCell = row.children[4];
+        let modeloCell = row.children[5];
+        let ccolorCell = row.children[6];
+        let placaCell = row.children[7];
+        let emailCell = row.children[8];
+
+        //cambiar la propiedad contenteditable
+        nombresCell.setAttribute("contenteditable", "true");
+        apellidosCell.setAttribute("contenteditable", "true");
+        carreraCell.setAttribute("contenteditable", "true");
+        marcaCell.setAttribute("contenteditable", "true");
+        modeloCell.setAttribute("contenteditable", "true");
+        ccolorCell.setAttribute("contenteditable", "true");
+        placaCell.setAttribute("contenteditable", "true");
+        emailCell.setAttribute("contenteditable", "true");
+
+        //poner el cursor sobre la celda 1
+        row.children.item(1).focus();
+
+        //cambiar el texto y color del boton de editar por guardar
+        let editButton = row.children[9].children[1];
+        editButton.setAttribute("class","btn btn-success");
+        editButton.innerHTML = "Guardar";
+
+        //al presionar el botón de guardar mandar llamar al metodo saveCar(con los datos de la fila)
+        editButton.setAttribute("onClick",`saveParking(${buttonPressId})`);
+    }
+        function saveParking(idButtonPress) {
+            let row = document.getElementById(idButtonPress);
+            let idCell = row.children[0];
+            let nombresCell = row.children[1];
+            let apellidosCell = row.children[2];
+            let carreraCell = row.children[3];
+            let marcaCell = row.children[4];
+            let modeloCell = row.children[5];
+            let ccolorCell = row.children[6];
+            let placaCell = row.children[7];
+            let emailCell = row.children[8];
+
+            const modelo = modeloCell.innerHTML.trim();
+            const color = ccolorCell.innerHTML.trim();
+            const nombres = nombresCell.innerHTML.trim();
+            const apellidos = apellidosCell.innerHTML.trim();
+
+            const ParkingUpdated = {
+                id: idCell.innerHTML,
+                nombres: nombres,
+                apellidos: apellidos,
+                carrera: carreraCell.innerHTML.trim(),
+                marca: marcaCell.innerHTML.trim(),
+                modelo: modelo,
+                ccolor: color,
+                placa: placaCell.innerHTML.trim(),
+                email: emailCell.innerHTML.trim()
+            };
+
+            const apiUrl = "http://localhost:8080/parking";
+
+
+            const requestOptions = {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(ParkingUpdated)
+            };
+
+            fetch(apiUrl, requestOptions)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(ParkingFromAPI => {
+                    console.log('Success:', ParkingFromAPI);
+                    populateTableFromJSON(url);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Handle error here
+                });
+        }
+
+
+        function findParking(id,findPath){
+            cleanTableRows();
+            populateTableFromJSON(url + findPath + document.getElementById(id).value);
+        }
+
+        function cleanTableRows() {
+            var tableHeaderRowCount = 1;
+            var table = document.getElementById('parking');
+            var rowCount = table.rows.length;
+            for (var i = tableHeaderRowCount; i < rowCount; i++) {
+                table.deleteRow(tableHeaderRowCount);
+            }
+        }
+
+        function deleteParkingButton(id) {
+            if (confirm("Estas seguro de eliminar al parking:"+id)) {
+                deleteCar(id);
+            } else {
+                console.log("No se ha eliminado al alumno");
+            }
+        }
+
+        function deleteCar(id) {
+            const deleteUrl = "http://localhost:8080/parking/delete?id="+id;
+            fetch(deleteUrl, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                    // Add any other headers if required
+                },
+                // You can include a request body if necessary
+                // body: JSON.stringify({ id: id })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('OK', data);
+                    populateTableFromJSON(url);
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                    // Handle errors, show an error message, or retry the operation
+                });
+        }
+
+
+</script>
+<footer>
+    <p>Todos los derechos reservados para Raul | 2024</p>
+</footer>
+</body>
+</html>

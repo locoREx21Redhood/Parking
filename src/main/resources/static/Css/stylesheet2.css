@@ -1,0 +1,29 @@
+body, html {
+    background-color: black; /* Fondo negro */
+    color: white; /* Texto blanco */
+}
+nav ul{
+	display: flex;
+	justify-content: center;
+	list-style: none;
+}
+nav a{
+	color: white; 
+	text-decoration: none; 
+	margin: 20px;
+}
+nav{
+	padding: 10px;
+	background-color: black;
+}
+
+footer{
+	font-size: 10px;
+	text-align: center;
+	background-color: #333;
+	padding: 10px 0;
+	color: white;
+}
+h1 {
+    text-align: center;
+}
